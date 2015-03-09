@@ -8,6 +8,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+/*
+ * PageServlet Class
+ * Check the url address that user want to enter
+ * then send user to the selected page
+ */
 public class PageServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 

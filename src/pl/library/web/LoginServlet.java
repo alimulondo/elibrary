@@ -3,10 +3,6 @@ package pl.library.web;
 import pl.library.model.*;
 
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
@@ -15,13 +11,21 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+/*
+ * LoginServlet Class
+ * Check the identity of user and login to 
+ * corresponding account if the user exists in database
+ */
 public class LoginServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	private DataModel _dm = null;
 
 	protected void doPost(HttpServletRequest request,
 			HttpServletResponse response) throws
 			IOException, ServletException {
+		
+		//create database object
+		QueryEngineModel engine = new QueryEngineModel();
+		IQuery db = engine.getDbType();
 		
 		String _user = "";
 		String _pass = "";
@@ -39,46 +43,13 @@ public class LoginServlet extends HttpServlet {
 			user = request.getParameter("username");
 			pass = request.getParameter("password");
 			
-			response.setCharacterEncoding("UTF-8");
-				
-			_dm = DataModel.getInstance();
-			Connection conn = null;
-			PreparedStatement stmt = null;
-			ResultSet result = null;
+			response.setCharacterEncoding("UTF-8");			
 			
-			try {
-				conn = _dm.getConnection();
-				stmt = conn.prepareStatement("select * from users");
-				result = stmt.executeQuery();
-				while(result.next()) {
-					if(result.getString(2).equals(user) && result.getString(3).equals(pass)) {
-						_userid = result.getInt(1);
-						_user = result.getString(2);
-						_pass = result.getString(3);	
-					}
-				}
-				result.close();
-				stmt.close();
-				conn.close();
-			} catch(SQLException e) {
-				e.printStackTrace();
-			} catch(ClassNotFoundException e) {
-				e.printStackTrace();
-			} finally {
-				try {
-					if(stmt != null)
-						stmt.close();
-				} catch(SQLException e) {
-					e.printStackTrace();
-				}
-				try {
-					if(conn != null)
-						conn.close();
-				} catch(SQLException e) {
-					e.printStackTrace();
-				}
-				
-			}
+			Object[] userParam = db.loginCheck(user, pass);
+			_userid = (Integer) userParam[0];
+			_user = (String) userParam[1];
+			_pass = (String) userParam[2];		
+			
 		} else {
 			user = "false";
 			pass = "false";
@@ -92,7 +63,7 @@ public class LoginServlet extends HttpServlet {
 			session.setMaxInactiveInterval(30*60);
 			
 			view = request.getRequestDispatcher("user.jsp");
-			session.setAttribute("books", _dm);
+			session.setAttribute("books", db);
 			view.forward(request, response);
 		} else {
 			view = request.getRequestDispatcher("index.jsp");
