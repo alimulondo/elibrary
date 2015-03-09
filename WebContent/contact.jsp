@@ -7,7 +7,7 @@
 	
 	<div id="contact">
 		<ul>
-			<li>email: <a href="mailto:piotrskurski|@wp.pl">piotrskurski@wp.pl</a></li>
+			<li>email: <a href="mailto:peterskurski@gmail.com">peterskurski@gmail.com</a></li>
 			<li>telefon: 692 369 593</li>
 			<li>strona www: <a href="http://java-programowanie.pl">java-programowanie.pl</a>
 		</ul>

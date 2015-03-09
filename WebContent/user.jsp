@@ -1,30 +1,30 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
-<%@ page import="java.util.*,java.sql.*,pl.library.model.DataModel" %>
+<%@ page import="java.util.*,java.sql.*,pl.library.model.*" %>
 
 	<%
 		//allow access only if session exists
-		Integer userid = null;
-		String user = null;
-		if(session.getAttribute("user") == null) {
-		    response.sendRedirect("index.jsp");
-		    return;
-		} else {
-			userid = (Integer) session.getAttribute("userid");
-			user = (String) session.getAttribute("user");
-		}
-		String sessionID = null;
-		Cookie[] cookies = request.getCookies();
-		if(cookies !=null) {
-			for(Cookie cookie : cookies){
-			    if(cookie.getName().equals("JSESSIONID")) sessionID = cookie.getValue();
+			Integer userid = null;
+			String user = null;
+			if(session.getAttribute("user") == null) {
+			    response.sendRedirect("index.jsp");
+			    return;
+			} else {
+		userid = (Integer) session.getAttribute("userid");
+		user = (String) session.getAttribute("user");
 			}
+			String sessionID = null;
+			Cookie[] cookies = request.getCookies();
+			if(cookies !=null) {
+		for(Cookie cookie : cookies){
+		    if(cookie.getName().equals("JSESSIONID")) sessionID = cookie.getValue();
 		}
+			}
 	%>
     
 	<%@include file="includes/header.jsp" %>	
 	
-	<h3>Witaj <%=user %>, oto twoja biblioteka:</h3>	
+	<h3>Witaj <%=user%>, oto twoja biblioteka:</h3>	
 	
 	<div id="logout">
 		<form action="logout" method="post">
@@ -44,21 +44,14 @@
 			<th>Data</th>
 			<th>Id</th>
 		</tr>
-	<% 
-		DataModel dm = (DataModel) session.getAttribute("books");
-		Connection conn = null;
-		PreparedStatement stmt = null;
-		ResultSet result = null;
+	<%
+		IQuery db = (IQuery) session.getAttribute("books");
+		PreparedStatement stmt = db.select((String)request.getAttribute("column"), userid);
 		
+		//(String)request.getAttribute("column")
 		try {
-			conn = dm.getConnection();
-			if(request.getAttribute("column") != null) {
-				String column = (String) request.getAttribute("column");
-				stmt = conn.prepareStatement("select * from books where books_userid="+userid+" order by "+column+";");
-			} else
-				stmt = conn.prepareStatement("select * from books where books_userid="+userid);
-			result = stmt.executeQuery();
-			
+			ResultSet result = stmt.executeQuery();
+		    
 			int i=1;
 			while(result.next()) {
 				out.println("<tr>");
@@ -74,28 +67,13 @@
 			}
 			out.println("</table>");
 			out.println("<p id=\"booknum\">Liczba książek wynosi: "+ --i +"</p>");
-			
-			result.close();
+		    
 			stmt.close();
-			conn.close();
+			db.disconnect();
+	
 		} catch(SQLException e) {
-			e.printStackTrace();
-		} catch(ClassNotFoundException e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				if(stmt != null)
-					stmt.close();
-			} catch(SQLException e) {
-				e.printStackTrace();
-			}
-			try {
-				if(conn != null)
-					conn.close();
-			} catch(SQLException e) {
-				e.printStackTrace();
-			}
-			
+            System.err.println("Błąd połączenia z bazą danych: " + e);
+            e.printStackTrace();
 		}
 	%>
 	</div>
